@@ -1,3 +1,3 @@
-module snail-trail
+module SnailTrail
 
 go 1.12
