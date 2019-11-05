@@ -16,3 +16,10 @@ func (v *Vector2) normalize() {
 	v.X /= mag
 	v.Y /= mag
 }
+
+// WithLength stretches or shrinks the vector to the specified length
+func (v *Vector2) WithLength(k float64) {
+	v.normalize()
+	v.X *= k
+	v.Y *= k
+}
