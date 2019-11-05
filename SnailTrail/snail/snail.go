@@ -34,3 +34,8 @@ func InitSnails() []Snail {
 	}
 	return snails
 }
+
+// Step steps the snail towards the next snail by stepSize
+func (s *Snail) Step(stepSize float64) {
+
+}
