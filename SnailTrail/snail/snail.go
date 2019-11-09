@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/cszczepaniak/fivethirtyeight-riddler/SnailTrail/point"
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SnailTrail/setup"
 	"github.com/cszczepaniak/fivethirtyeight-riddler/SnailTrail/vector"
 )
 
@@ -26,16 +27,20 @@ type Snail struct {
 }
 
 // InitSnails creates the six snails
-func InitSnails() []Snail {
-	snails := make([]Snail, 6)
-	for i, p := range hexPoints {
+func InitSnails(s setup.Setup) []Snail {
+	pts := s.InitPoints()
+	snails := make([]Snail, len(pts))
+	for i, p := range pts {
 		snails[i].Pos = p
-		snails[i].next = &snails[(i+1)%6]
+		snails[i].next = &snails[(i+1)%len(pts)]
 	}
 	return snails
 }
 
 // Step steps the snail towards the next snail by stepSize
 func (s *Snail) Step(stepSize float64) {
-
+	s.Dir = s.next.Pos.VectorFrom(s.Pos)
+	s.Dir.WithLength(stepSize)
+	s.Pos.X += s.Dir.X
+	s.Pos.Y += s.Dir.Y
 }
