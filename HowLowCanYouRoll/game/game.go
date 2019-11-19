@@ -1,9 +1,12 @@
 package game
 
-import "math/rand"
+import (
+	"math/big"
+	"math/rand"
+)
 
 func Play() {
-	var n int64 = 0
+	n := big.NewInt(0)
 	for {
 		roll := rand.Int63n(10)
 		if roll == 0 {
@@ -13,9 +16,12 @@ func Play() {
 	}
 }
 
-func updateScore(score, roll int64) int64 {
-	if roll > score%10 && score != 0 {
+func updateScore(score *big.Int, roll int64) *big.Int {
+	r := big.NewInt(roll)
+	rem := new(big.Int).Mod(score, big.NewInt(int64(10)))
+	if r.Cmp(rem) > 0 && score.Cmp(big.NewInt(0)) != 0 {
 		return score
 	}
-	return score*10 + roll
+	score.Add(new(big.Int).Mul(score, big.NewInt(10)), r)
+	return score
 }
