@@ -10,18 +10,21 @@ func Test_updateScore(t *testing.T) {
 	tests := []struct {
 		name   string
 		score  int64
-		roll   int64
+		rolls  []int64
 		expect int64
 	}{
 		{
 			name:   `easy test`,
 			score:  9,
-			roll:   1,
+			rolls:  []int64{9, 1},
 			expect: 91,
 		},
 	}
 	for _, tc := range tests {
-		score := updateScore(tc.score, tc.roll)
+		var score int64 = 0
+		for _, r := range tc.rolls {
+			score = updateScore(score, r)
+		}
 		assert.Equal(t, tc.expect, score, tc.name)
 	}
 }

@@ -14,7 +14,7 @@ func Play() {
 }
 
 func updateScore(score, roll int64) int64 {
-	if roll > score%10 {
+	if roll > score%10 && score != 0 {
 		return score
 	}
 	return score*10 + roll
