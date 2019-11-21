@@ -1,16 +1,23 @@
 package game
 
 import (
+	"math/big"
 	"math/rand"
+	"time"
 )
 
-func Play() string {
+func Play() *big.Float {
 	var score string = `0.`
+	rand.Seed(time.Now().UnixNano())
 	for {
 		roll := rand.Intn(10)
 		updateScore(&score, roll)
 		if lastDigit(score) == '0' {
-			return score
+			f, ok := new(big.Float).SetString(score)
+			if ok {
+				return f
+			}
+			return big.NewFloat(0)
 		}
 	}
 }
