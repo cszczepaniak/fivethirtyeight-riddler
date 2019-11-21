@@ -1,7 +1,6 @@
 package game
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,44 +9,40 @@ import (
 func Test_updateScore(t *testing.T) {
 	tests := []struct {
 		name      string
-		rolls     []int64
+		rolls     []int
 		expectStr string
 	}{
 		{
 			name:      `simple test`,
-			rolls:     []int64{9, 1},
-			expectStr: `91`,
+			rolls:     []int{9, 1},
+			expectStr: `0.91`,
 		},
 		{
 			name:      `test repeated digits`,
-			rolls:     []int64{9, 9, 7},
-			expectStr: `997`,
+			rolls:     []int{9, 9, 7},
+			expectStr: `0.997`,
 		},
 		{
 			name:      `test higher digits`,
-			rolls:     []int64{7, 9, 6},
-			expectStr: `76`,
+			rolls:     []int{7, 9, 6},
+			expectStr: `0.76`,
 		},
 		{
-			name:      `test really big int`,
-			rolls:     []int64{9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9},
-			expectStr: `9999999999999999999`,
+			name:      `test a lot of rolls`,
+			rolls:     []int{9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9},
+			expectStr: `0.9999999999999999999`,
+		},
+		{
+			name:      `test zero`,
+			rolls:     []int{0},
+			expectStr: `0.0`,
 		},
 	}
 	for _, tc := range tests {
-		rolls := make([]*big.Int, len(tc.rolls))
-		for i, r := range tc.rolls {
-			rolls[i] = big.NewInt(r)
-		}
-		expect := big.NewInt(0)
-		if _, success := expect.SetString(tc.expectStr, 10); !success {
-			panic(`conversion failed`)
-		}
-
-		score := big.NewInt(int64(0))
+		score := `0.`
 		for _, r := range tc.rolls {
-			score = updateScore(score, r)
+			updateScore(&score, r)
 		}
-		assert.Equal(t, expect, score, tc.name)
+		assert.Equal(t, tc.expectStr, score, tc.name)
 	}
 }

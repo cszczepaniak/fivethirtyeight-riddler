@@ -1,27 +1,28 @@
 package game
 
 import (
-	"math/big"
 	"math/rand"
 )
 
 func Play() {
-	n := big.NewInt(0)
+	var score string = `0.`
 	for {
-		roll := rand.Int63n(10)
+		roll := rand.Intn(10)
 		if roll == 0 {
 			break
 		}
-		n = updateScore(n, roll)
+		updateScore(&score, roll)
 	}
 }
 
-func updateScore(score *big.Int, roll int64) *big.Int {
-	r := big.NewInt(roll)
-	rem := new(big.Int).Mod(score, big.NewInt(int64(10)))
-	if r.Cmp(rem) > 0 && score.Cmp(big.NewInt(0)) != 0 {
-		return score
+func updateScore(score *string, roll int) {
+	scoreRunes := []rune(*score)
+	lastDigit := scoreRunes[len(scoreRunes)-1]
+	rollRune := rune(roll + 48)
+	if lastDigit == '.' {
+		scoreRunes = append(scoreRunes, rollRune)
+	} else if rollRune <= lastDigit {
+		scoreRunes = append(scoreRunes, rollRune)
 	}
-	score.Add(new(big.Int).Mul(score, big.NewInt(10)), r)
-	return score
+	*score = string(scoreRunes)
 }
