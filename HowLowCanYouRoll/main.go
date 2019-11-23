@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"time"
 
@@ -8,19 +9,20 @@ import (
 )
 
 func main() {
-	defer printTime(time.Now())
+	nGames := flag.Int(`n`, 1000000, `number of games to simulate`)
+	flag.Parse()
 
-	nGames := 100000000
-	nWorkers := 100
+	defer printTime(time.Now())
+	nWorkers := 10
 	var sum float64 = 0
 	results := make(chan float64)
 	for i := 0; i < nWorkers; i++ {
-		go worker(nGames/nWorkers, results)
+		go worker(*nGames/nWorkers, results)
 	}
-	for i := 0; i < nGames; i++ {
+	for i := 0; i < *nGames; i++ {
 		sum += <-results
 	}
-	avg := sum / float64(nGames) //new(big.Float).Quo(sum, big.NewFloat(float64(nGames)))
+	avg := sum / float64(*nGames)
 	fmt.Println(avg)
 }
 
