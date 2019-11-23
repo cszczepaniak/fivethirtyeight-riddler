@@ -8,41 +8,36 @@ import (
 
 func Test_updateScore(t *testing.T) {
 	tests := []struct {
-		name      string
-		rolls     []int
-		expectStr string
+		name   string
+		rolls  []int
+		expect uint64
 	}{
 		{
-			name:      `simple test`,
-			rolls:     []int{9, 1},
-			expectStr: `0.91`,
+			name:   `simple test`,
+			rolls:  []int{9, 1},
+			expect: 91,
 		},
 		{
-			name:      `test repeated digits`,
-			rolls:     []int{9, 9, 7},
-			expectStr: `0.997`,
+			name:   `test repeated digits`,
+			rolls:  []int{9, 9, 7},
+			expect: 997,
 		},
 		{
-			name:      `test higher digits`,
-			rolls:     []int{7, 9, 6},
-			expectStr: `0.76`,
+			name:   `test higher digits`,
+			rolls:  []int{7, 9, 6},
+			expect: 76,
 		},
 		{
-			name:      `test a lot of rolls`,
-			rolls:     []int{9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9},
-			expectStr: `0.9999999999999999999`,
-		},
-		{
-			name:      `test zero`,
-			rolls:     []int{0},
-			expectStr: `0.0`,
+			name:   `test zero`,
+			rolls:  []int{0},
+			expect: 0,
 		},
 	}
 	for _, tc := range tests {
-		score := `0.`
+		var score uint64 = 0
 		for _, r := range tc.rolls {
 			updateScore(&score, r)
 		}
-		assert.Equal(t, tc.expectStr, score, tc.name)
+		assert.Equal(t, tc.expect, score, tc.name)
 	}
 }
