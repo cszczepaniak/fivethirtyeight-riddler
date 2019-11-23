@@ -1,6 +1,7 @@
 package game
 
 import (
+	"math"
 	"math/rand"
 	"time"
 )
@@ -25,9 +26,11 @@ func updateScore(score *uint64, roll int) {
 }
 
 func scoreToFloat(score uint64) float64 {
-	fltScore := float64(score)
-	for fltScore > 1 {
-		fltScore /= 10
+	n := 0
+	quo := score
+	for quo > 0 {
+		quo /= 10
+		n++
 	}
-	return fltScore
+	return float64(score) / math.Pow(10, float64(n))
 }
