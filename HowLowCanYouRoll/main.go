@@ -1,31 +1,32 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"math/big"
 	"time"
 
 	"github.com/cszczepaniak/fivethirtyeight-riddler/HowLowCanYouRoll/game"
 )
 
 func main() {
-	defer printTime(time.Now())
+	nGames := flag.Int(`n`, 1000000, `number of games to simulate`)
+	flag.Parse()
 
-	nGames := 100000000
-	nWorkers := 100
-	sum := big.NewFloat(0)
-	results := make(chan *big.Float)
+	defer printTime(time.Now())
+	nWorkers := 10
+	var sum float64 = 0
+	results := make(chan float64)
 	for i := 0; i < nWorkers; i++ {
-		go worker(nGames/nWorkers, results)
+		go worker(*nGames/nWorkers, results)
 	}
-	for i := 0; i < nGames; i++ {
-		sum.Add(sum, <-results)
+	for i := 0; i < *nGames; i++ {
+		sum += <-results
 	}
-	avg := new(big.Float).Quo(sum, big.NewFloat(float64(nGames)))
+	avg := sum / float64(*nGames)
 	fmt.Println(avg)
 }
 
-func worker(nGames int, results chan<- *big.Float) {
+func worker(nGames int, results chan<- float64) {
 	for i := 0; i < nGames; i++ {
 		results <- game.Play()
 	}
