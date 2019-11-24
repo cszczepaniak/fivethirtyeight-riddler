@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Play the game
 func Play() float64 {
 	var score uint64 = 0
 	rand.Seed(time.Now().UnixNano())
