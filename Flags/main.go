@@ -4,20 +4,46 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	_ "image/gif"
 	_ "image/png"
 	"os"
-	"sort"
+	"strconv"
 )
 
+const binSize = 8
+
+type bin int
+
+func (b bin) String() string {
+	return strconv.Itoa(int(b))
+}
+
+func newBin(n uint32) bin {
+	val := n / binSize * binSize
+	return bin(val)
+}
+
 type colorData struct {
-	R     uint32
-	G     uint32
-	B     uint32
-	count int
+	R uint32
+	G uint32
+	B uint32
+}
+
+func (cd colorData) String() string {
+	return fmt.Sprintf(`{R:%d G:%d B:%d}`, cd.R, cd.G, cd.B)
+}
+
+func newColorData(c color.Color) colorData {
+	r, g, b, _ := c.RGBA()
+	return colorData{
+		R: r,
+		G: g,
+		B: b,
+	}
 }
 
 func main() {
-	reader, err := os.Open(`flag_1.png`)
+	reader, err := os.Open(`inputData/flag_1.png`)
 	if err != nil {
 		panic(err)
 	}
@@ -30,41 +56,37 @@ func main() {
 
 	bnds := im.Bounds().Size()
 
-	clrMap := make(map[color.Color]colorData)
+	clrMap := make(map[colorData]int)
 	for i := 0; i < bnds.X; i++ {
 		for j := 0; j < bnds.Y; j++ {
 			c := im.At(i, j)
-			_, ok := clrMap[c]
+			cd := newColorData(c)
+			_, ok := clrMap[cd]
 			if !ok {
-				r, g, b, _ := c.RGBA()
-				clrMap[c] = colorData{
-					R:     r / 256,
-					G:     g / 256,
-					B:     b / 256,
-					count: 1,
-				}
+				clrMap[cd] = 1
 			} else {
-				dat := clrMap[c]
-				dat.count++
-				clrMap[c] = dat
+				clrMap[cd]++
 			}
 		}
 	}
-	totalPix := float64(bnds.X * bnds.Y)
-	all := make([]colorData, len(clrMap))
-	idx := 0
-	for _, c := range clrMap {
-		all[idx] = c
-		idx++
-	}
-	sort.Slice(all, func(i, j int) bool {
-		return all[i].count > all[j].count
-	})
-	for _, c := range all {
-		pct := float64(c.count) / totalPix * 100.0
-		if pct < 0.1 {
-			break
-		}
-		fmt.Printf("Color [%d, %d, %d] makes up %f percent of the map\n", c.R, c.G, c.B, pct)
-	}
 }
+
+// func binEdges() []int {
+// 	e := make([]int, 16)
+// 	for i := range e {
+// 		e[i] = i*16
+// 	}
+// 	return e
+// }
+
+// func makeBin(n uint32, bins []int) (bin, error) {
+// 	if n < 0 || n > 255 {
+// 		return [2]int{0, 0}, fmt.Errorf(`value of n [%d] is out of range`, n)
+// 	}
+// 	signed := int(n)
+// 	low, hi := signed-10, signed+10
+// 	if low < 0 {
+// 		low = 0
+// 	}
+// 	if high
+// }
