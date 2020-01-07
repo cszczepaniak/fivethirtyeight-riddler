@@ -1,27 +1,14 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	"image/color"
 	_ "image/gif"
 	_ "image/png"
 	"os"
-	"strconv"
 )
-
-const binSize = 8
-
-type bin int
-
-func (b bin) String() string {
-	return strconv.Itoa(int(b))
-}
-
-func newBin(n uint32) bin {
-	val := n / binSize * binSize
-	return bin(val)
-}
 
 type colorData struct {
 	R uint32
@@ -42,18 +29,30 @@ func newColorData(c color.Color) colorData {
 	}
 }
 
-func main() {
-	reader, err := os.Open(`inputData/flag_1.png`)
+func decodeImage(filename string) (*image.RGBA, error) {
+	r, err := os.Open(filename)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	defer reader.Close()
+	defer r.Close()
 
-	im, _, err := image.Decode(reader)
+	im, _, err := image.Decode(r)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+	rgba, ok := im.(*image.RGBA)
+	if !ok {
+		return nil, errors.New(`conversion to RGBA failed on ` + filename)
+	}
+	return rgba, nil
+}
 
+func getImageDimensions(im *image.RGBA) (int, int) {
+	b := im.Bounds()
+	return b.Dx(), b.Dy()
+}
+
+func getPixels(im *image.RGBA) (map[colorData]int, error) {
 	bnds := im.Bounds().Size()
 
 	clrMap := make(map[colorData]int)
@@ -69,24 +68,57 @@ func main() {
 			}
 		}
 	}
+	return clrMap, nil
 }
 
-// func binEdges() []int {
-// 	e := make([]int, 16)
-// 	for i := range e {
-// 		e[i] = i*16
-// 	}
-// 	return e
-// }
+func getFilesInFolder(folder string) ([]os.FileInfo, error) {
+	f, err := os.Open(folder)
+	if err != nil {
+		return nil, err
+	}
+	files, err := f.Readdir(-1)
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
+}
 
-// func makeBin(n uint32, bins []int) (bin, error) {
-// 	if n < 0 || n > 255 {
-// 		return [2]int{0, 0}, fmt.Errorf(`value of n [%d] is out of range`, n)
-// 	}
-// 	signed := int(n)
-// 	low, hi := signed-10, signed+10
-// 	if low < 0 {
-// 		low = 0
-// 	}
-// 	if high
-// }
+func compareImages(im1, im2 map[colorData]int) (int, error) {
+	im1Ct, im2Ct := 0, 0
+	for _, ct := range im1 {
+		im1Ct += ct
+	}
+	for _, ct := range im2 {
+		im2Ct += ct
+	}
+	if im1Ct != im2Ct {
+		return 0, errors.New(`pixel count between the images are not the same`)
+	}
+}
+
+func main() {
+	files, err := getFilesInFolder(`flags/`)
+	if err != nil {
+		panic(err)
+	}
+
+	im, err := decodeImage(`inputData/flag_1.png`)
+	if err != nil {
+		panic(err)
+	}
+
+	targetW, targetH := getImageDimensions(im)
+	fmt.Println(targetW)
+	fmt.Println(targetH)
+	for _, f := range files {
+		thisFlag, err := decodeImage(`flags/` + f.Name())
+		if err != nil {
+			panic(err)
+		}
+		w, h := getImageDimensions(thisFlag)
+		if w != targetW || h != targetH {
+			continue
+		}
+		fmt.Println(`found image with proper dimensions: ` + f.Name())
+	}
+}
