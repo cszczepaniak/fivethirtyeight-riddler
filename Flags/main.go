@@ -21,11 +21,12 @@ func (cd colorData) String() string {
 
 func newColorData(c color.Color) colorData {
 	r, g, b, _ := c.RGBA()
+	q := 10
 	return colorData{
 		// bin the colors to account for image conversion artifacts
-		R: r >> 12,
-		G: g >> 12,
-		B: b >> 12,
+		R: r >> q,
+		G: g >> q,
+		B: b >> q,
 	}
 }
 
