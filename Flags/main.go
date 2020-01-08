@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"image"
 	"image/color"
@@ -30,7 +29,7 @@ func newColorData(c color.Color) colorData {
 	}
 }
 
-func decodeImage(filename string) (*image.RGBA, error) {
+func decodeImage(filename string) (image.Image, error) {
 	r, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -41,19 +40,15 @@ func decodeImage(filename string) (*image.RGBA, error) {
 	if err != nil {
 		return nil, err
 	}
-	rgba, ok := im.(*image.RGBA)
-	if !ok {
-		return nil, errors.New(`conversion to RGBA failed on ` + filename)
-	}
-	return rgba, nil
+	return im, nil
 }
 
-func getImageDimensions(im *image.RGBA) (int, int) {
+func getImageDimensions(im image.Image) (int, int) {
 	b := im.Bounds()
 	return b.Dx(), b.Dy()
 }
 
-func getPixels(im *image.RGBA) (map[colorData]int, error) {
+func getPixels(im image.Image) (map[colorData]int, error) {
 	bnds := im.Bounds().Size()
 
 	clrMap := make(map[colorData]int)
@@ -99,7 +94,7 @@ func compareImages(im1, im2 map[colorData]int) int {
 	return inCommon
 }
 
-func findClosestMatch(im *image.RGBA, flags []os.FileInfo) (string, int, error) {
+func findClosestMatch(im image.Image, flags []os.FileInfo) (string, int, error) {
 	bestRank, bestImage := 0, ``
 	mysteryPx, err := getPixels(im)
 	if err != nil {
