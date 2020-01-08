@@ -91,13 +91,7 @@ func downloadWorldFlagImages() error {
 		if err != nil {
 			return err
 		}
-		trimmed, err := trimBorder(im, 1)
-		if err != nil {
-			return err
-		}
-		b := trimmed.Bounds()
-		fmt.Printf("image has size %dx%d\n", b.Dx(), b.Dy())
-		err = saveImg(trimmed, flagsDir+filename)
+		err = saveImg(im, flagsDir+filename)
 		if err != nil {
 			return err
 		}
