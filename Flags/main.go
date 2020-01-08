@@ -23,10 +23,10 @@ func (cd colorData) String() string {
 func newColorData(c color.Color) colorData {
 	r, g, b, _ := c.RGBA()
 	return colorData{
-		// take it from 16- to 4-bit
-		R: r >> 8,
-		G: g >> 8,
-		B: b >> 8,
+		// bin the colors to account for image conversion artifacts
+		R: r >> 12,
+		G: g >> 12,
+		B: b >> 12,
 	}
 }
 
@@ -84,8 +84,8 @@ func getFilesInFolder(folder string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
-func compareImages(im1, im2 map[colorData]int) (int, error) {
-	im1Ct, im2Ct, inCommon := 0, 0, 0
+func compareImages(im1, im2 map[colorData]int) int {
+	inCommon := 0
 	for clr, ct1 := range im1 {
 		ct2, ok := im2[clr]
 		if ok {
@@ -95,20 +95,11 @@ func compareImages(im1, im2 map[colorData]int) (int, error) {
 				inCommon += ct2
 			}
 		}
-
-		im1Ct += ct1
 	}
-	for _, ct := range im2 {
-		im2Ct += ct
-	}
-	if im1Ct != im2Ct {
-		return 0, errors.New(`pixel count between the images are not the same`)
-	}
-	return inCommon, nil
+	return inCommon
 }
 
 func findClosestMatch(im *image.RGBA, flags []os.FileInfo) (string, int, error) {
-	targetW, targetH := getImageDimensions(im)
 	bestRank, bestImage := 0, ``
 	mysteryPx, err := getPixels(im)
 	if err != nil {
@@ -120,18 +111,11 @@ func findClosestMatch(im *image.RGBA, flags []os.FileInfo) (string, int, error) 
 			fmt.Printf("an error occurred decoding %s: %s skipping...\n", f.Name(), err.Error())
 			continue
 		}
-		w, h := getImageDimensions(thisFlag)
-		if w != targetW || h != targetH {
-			continue
-		}
 		thesePx, err := getPixels(thisFlag)
 		if err != nil {
 			return ``, 0, err
 		}
-		rank, err := compareImages(mysteryPx, thesePx)
-		if err != nil {
-			return ``, 0, err
-		}
+		rank := compareImages(mysteryPx, thesePx)
 		if rank > bestRank {
 			bestRank = rank
 			bestImage = f.Name()
