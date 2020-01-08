@@ -23,9 +23,10 @@ func (cd colorData) String() string {
 func newColorData(c color.Color) colorData {
 	r, g, b, _ := c.RGBA()
 	return colorData{
-		R: r,
-		G: g,
-		B: b,
+		// take it from 16- to 4-bit
+		R: r >> 8,
+		G: g >> 8,
+		B: b >> 8,
 	}
 }
 
@@ -106,27 +107,17 @@ func compareImages(im1, im2 map[colorData]int) (int, error) {
 	return inCommon, nil
 }
 
-func main() {
-	files, err := getFilesInFolder(`flags/`)
-	if err != nil {
-		panic(err)
-	}
-
-	im, err := decodeImage(`inputData/flag_1.png`)
-	if err != nil {
-		panic(err)
-	}
-	mysteryPx, err := getPixels(im)
-	if err != nil {
-		panic(err)
-	}
-
+func findClosestMatch(im *image.RGBA, flags []os.FileInfo) (string, int, error) {
 	targetW, targetH := getImageDimensions(im)
 	bestRank, bestImage := 0, ``
-	for _, f := range files {
+	mysteryPx, err := getPixels(im)
+	if err != nil {
+		return ``, 0, err
+	}
+	for _, f := range flags {
 		thisFlag, err := decodeImage(`flags/` + f.Name())
 		if err != nil {
-			fmt.Printf("an error occurred decoding %s. skipping...\n", f.Name())
+			fmt.Printf("an error occurred decoding %s: %s skipping...\n", f.Name(), err.Error())
 			continue
 		}
 		w, h := getImageDimensions(thisFlag)
@@ -135,18 +126,38 @@ func main() {
 		}
 		thesePx, err := getPixels(thisFlag)
 		if err != nil {
-			panic(err)
+			return ``, 0, err
 		}
 		rank, err := compareImages(mysteryPx, thesePx)
 		if err != nil {
-			panic(err)
+			return ``, 0, err
 		}
-		fmt.Printf("pixels in common with %s: %d\n", f.Name(), rank)
 		if rank > bestRank {
-			fmt.Printf("this rank of %d beats the best rank of %d\n", rank, bestRank)
 			bestRank = rank
 			bestImage = f.Name()
 		}
 	}
-	fmt.Printf("the flag with the most pixels in common is %s\n", bestImage)
+	return bestImage, bestRank, nil
+}
+
+func main() {
+	flags, err := getFilesInFolder(`flags/`)
+	if err != nil {
+		panic(err)
+	}
+	inputs, err := getFilesInFolder(`inputData/`)
+	if err != nil {
+		panic(err)
+	}
+	for _, in := range inputs {
+		im, err := decodeImage(`inputData/` + in.Name())
+		if err != nil {
+			panic(err)
+		}
+		m, n, err := findClosestMatch(im, flags)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("the closest match to %s is %s with a score of %d\n", in.Name(), m, n)
+	}
 }
