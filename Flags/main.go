@@ -30,7 +30,14 @@ func newColorData(c color.Color) colorData {
 	}
 }
 
-func decodeImage(filename string) (image.Image, error) {
+type pixelDistribution map[colorData]int
+
+type imageData struct {
+	file string
+	px   pixelDistribution
+}
+
+func decodeImageFromFile(filename string) (image.Image, error) {
 	r, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -44,12 +51,7 @@ func decodeImage(filename string) (image.Image, error) {
 	return im, nil
 }
 
-func getImageDimensions(im image.Image) (int, int) {
-	b := im.Bounds()
-	return b.Dx(), b.Dy()
-}
-
-func getPixels(im image.Image) (map[colorData]int, error) {
+func getPixelDistribution(im image.Image) (pixelDistribution, error) {
 	bnds := im.Bounds().Size()
 
 	clrMap := make(map[colorData]int)
@@ -80,7 +82,7 @@ func getFilesInFolder(folder string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
-func compareImages(im1, im2 map[colorData]int) int {
+func compareImages(im1, im2 pixelDistribution) int {
 	inCommon := 0
 	for clr, ct1 := range im1 {
 		ct2, ok := im2[clr]
@@ -95,46 +97,65 @@ func compareImages(im1, im2 map[colorData]int) int {
 	return inCommon
 }
 
-func findClosestMatch(im image.Image, flags []os.FileInfo) (string, int, error) {
-	bestRank, bestImage := 0, ``
-	mysteryPx, err := getPixels(im)
+func getPixelsForFlags() ([]imageData, error) {
+	files, err := getFilesInFolder(`flags/`)
 	if err != nil {
-		return ``, 0, err
+		return nil, err
 	}
+	result := make([]imageData, len(files))
+	for i, f := range files {
+		im, err := decodeImageFromFile(`flags/` + f.Name())
+		if err != nil {
+			return nil, err
+		}
+		px, err := getPixelDistribution(im)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = imageData{
+			file: f.Name(),
+			px:   px,
+		}
+	}
+	return result, nil
+}
+
+func findClosestMatch(flags []imageData, mystery imageData) (string, int, error) {
+	bestRank, bestImage := 0, ``
 	for _, f := range flags {
-		thisFlag, err := decodeImage(`flags/` + f.Name())
-		if err != nil {
-			fmt.Printf("an error occurred decoding %s: %s skipping...\n", f.Name(), err.Error())
-			continue
-		}
-		thesePx, err := getPixels(thisFlag)
-		if err != nil {
-			return ``, 0, err
-		}
-		rank := compareImages(mysteryPx, thesePx)
+		rank := compareImages(f.px, mystery.px)
 		if rank > bestRank {
 			bestRank = rank
-			bestImage = f.Name()
+			bestImage = f.file
 		}
 	}
 	return bestImage, bestRank, nil
 }
 
 func main() {
-	flags, err := getFilesInFolder(`flags/`)
-	if err != nil {
-		panic(err)
-	}
 	inputs, err := getFilesInFolder(`inputData/`)
 	if err != nil {
 		panic(err)
 	}
+	flagData, err := getPixelsForFlags()
+	if err != nil {
+		panic(err)
+	}
 	for _, in := range inputs {
-		im, err := decodeImage(`inputData/` + in.Name())
+		im, err := decodeImageFromFile(`inputData/` + in.Name())
 		if err != nil {
 			panic(err)
 		}
-		m, n, err := findClosestMatch(im, flags)
+		px, err := getPixelDistribution(im)
+		if err != nil {
+			panic(err)
+		}
+		inputData := imageData{
+			file: in.Name(),
+			px:   px,
+		}
+
+		m, n, err := findClosestMatch(flagData, inputData)
 		if err != nil {
 			panic(err)
 		}
