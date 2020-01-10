@@ -9,14 +9,18 @@ import (
 )
 
 func main() {
-	err := downloadWords()
-	if err != nil {
-		panic(err)
+	if !fileExists(`words.txt`) {
+		err := downloadWords()
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	err = filterWords()
-	if err != nil {
-		panic(err)
+	if !fileExists(`filtered.txt`) {
+		err := filterWords()
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -76,4 +80,12 @@ func downloadWords() error {
 		return err
 	}
 	return nil
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
