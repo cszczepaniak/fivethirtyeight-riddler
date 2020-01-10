@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -22,15 +23,15 @@ func newLetterSet(s string) letterSet {
 }
 
 type board struct {
-	middle rune
-	others letterSet
+	middle  rune
+	letters letterSet
 }
 
 func newBoard(middle rune, others []rune) (board, error) {
 	if len(others) != 6 {
 		return board{}, errors.New(`a board must have six outer letters`)
 	}
-	letters := make(map[rune]struct{}, len(others))
+	letters := make(map[rune]struct{}, len(others)+1)
 	for _, r := range others {
 		if _, ok := letters[r]; !ok {
 			letters[r] = struct{}{}
@@ -41,10 +42,57 @@ func newBoard(middle rune, others []rune) (board, error) {
 	if _, ok := letters[middle]; ok {
 		return board{}, errors.New(`a board cannot contain duplicate letters`)
 	}
+	letters[middle] = struct{}{}
 	return board{
-		middle: middle,
-		others: letters,
+		middle:  middle,
+		letters: letters,
 	}, nil
+}
+
+func (b board) String() string {
+	str := `[` + string(b.middle) + `: `
+	for c := range b.letters {
+		if c == b.middle {
+			continue
+		}
+		str += string(c)
+	}
+	return str + `]`
+}
+
+func (b *board) canMakeWord(w word) bool {
+	// the word must contain the middle letter
+	if _, ok := w.letters[b.middle]; !ok {
+		return false
+	}
+	for l := range w.letters {
+		if _, ok := b.letters[l]; !ok {
+			return false
+		}
+	}
+	return true
+}
+
+func (b *board) scoreWord(w word) int {
+	if !b.canMakeWord(w) {
+		return 0
+	}
+	runes := []rune(w.str)
+	if len(runes) == 4 {
+		return 1
+	}
+	score := len(runes)
+	isBonus := true
+	for l := range b.letters {
+		if _, ok := w.letters[l]; !ok {
+			isBonus = false
+			break
+		}
+	}
+	if isBonus {
+		score += 7
+	}
+	return score
 }
 
 type word struct {
@@ -52,11 +100,14 @@ type word struct {
 	letters letterSet
 }
 
-func newWord(w string) word {
+func newWord(w string) (word, error) {
+	if len([]rune(w)) < 4 {
+		return word{}, errors.New(`words must be at least 4 letters long`)
+	}
 	return word{
 		str:     w,
 		letters: newLetterSet(w),
-	}
+	}, nil
 }
 
 func main() {
@@ -67,10 +118,22 @@ func main() {
 		}
 	}
 
-	words, err := filterWords()
+	b, err := newBoard('g', []rune{'a', 'p', 'x', 'm', 'e', 'l'})
 	if err != nil {
 		panic(err)
 	}
+
+	w, err := newWord(`amalgam`)
+	if err != nil {
+		panic(err)
+	}
+	score := b.scoreWord(w)
+	fmt.Printf("score on board %s for word %s: %d\n", b, w.str, score)
+
+	// words, err := filterWords()
+	// if err != nil {
+	// 	panic(err)
+	// }
 }
 
 func buildLetterSet(word string) letterSet {
