@@ -1,6 +1,12 @@
 package main
 
-import "errors"
+import (
+	"errors"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"strings"
+)
 
 type word struct {
 	str     string
@@ -15,4 +21,65 @@ func newWord(w string) (word, error) {
 		str:     w,
 		letters: newLetterSet(w),
 	}, nil
+}
+
+func getWordList() ([]word, error) {
+	ws, err := readWordsFromFile(`words.txt`)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]word, 0, len(ws))
+	for _, w := range ws {
+		if len([]rune(w)) < 4 || strings.Contains(w, `s`) {
+			continue
+		}
+		word, err := newWord(w)
+		if err != nil {
+			panic(err)
+		}
+		res = append(res, word)
+	}
+	return res, nil
+}
+
+func readWordsFromFile(file string) ([]string, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	bytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+
+	txt := string(bytes)
+	return strings.Split(txt, "\n"), nil
+}
+
+func downloadWords() error {
+	resp, err := http.Get(`https://norvig.com/ngrams/enable1.txt`)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(`words.txt`)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.Write(bytes)
+	if err != nil {
+		return err
+	}
+	return nil
 }

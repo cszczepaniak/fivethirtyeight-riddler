@@ -1,6 +1,9 @@
 package main
 
-import "errors"
+import (
+	"errors"
+	"os"
+)
 
 func combinations(superset []rune, n int) [][]rune {
 	if len(superset) == n {
@@ -50,4 +53,12 @@ func getAlphabetWithout(without []rune) ([]rune, error) {
 		res = append(res, r)
 	}
 	return res, nil
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
