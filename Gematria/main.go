@@ -23,6 +23,16 @@ func main() {
 	}
 	fmt.Printf("best number under %d: %d with an alphanumeric value of %d\n", max, bestNum, bestNumVal)
 	fmt.Printf("and a string of %q\n", bestStr)
+	for i, r := range bestStr {
+		if r < 'a' || r > 'z' {
+			continue
+		}
+		fmt.Printf("%d", int(r-'a')+1)
+		if i < len([]rune(bestStr))-1 {
+			fmt.Printf("+")
+		}
+	}
+	fmt.Printf("=%d\n", bestNumVal)
 }
 
 func joinWords(strs ...string) string {
