@@ -14,6 +14,15 @@ func TestNumberAsWord(t *testing.T) {
 		n:   1000,
 		exp: `one thousand`,
 	}, {
+		n:   1234567,
+		exp: `one million two hundred thirty four thousand five hundred sixty seven`,
+	}, {
+		n:   12345,
+		exp: `twelve thousand three hundred fourty five`,
+	}, {
+		n:   987654,
+		exp: `nine hundred eighty seven thousand six hundred fifty four`,
+	}, {
 		n:   123,
 		exp: `one hundred twenty three`,
 	}, {

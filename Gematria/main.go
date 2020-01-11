@@ -26,7 +26,7 @@ func numberAsWord(n int) (string, error) {
 	i := 0
 	for n > 0 {
 		thisGroup := lowestThreeDigits(n)
-		str = joinWords(str, thisGroup, groups[i])
+		str = joinWords(thisGroup, groups[i], str)
 		n /= 1000
 		i++
 	}
