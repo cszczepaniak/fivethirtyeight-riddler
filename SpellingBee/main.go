@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"runtime"
 	"sync"
+	"time"
 )
 
 type result struct {
@@ -12,6 +13,7 @@ type result struct {
 }
 
 func main() {
+	start := time.Now()
 	if !fileExists(`words.txt`) {
 		err := downloadWords()
 		if err != nil {
@@ -50,6 +52,8 @@ func main() {
 	}()
 	wg.Wait()
 	fmt.Printf("best board: %s; with score %d\n", bestBoard, bestScore)
+	d := time.Since(start)
+	fmt.Printf("Elapsed time %s: \n", d)
 }
 
 func divideAlphabet(a []rune, n int) [][]rune {
