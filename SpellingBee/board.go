@@ -74,3 +74,20 @@ func (b *board) scoreWord(w word) int {
 	}
 	return score
 }
+
+func allBoardsWithCenter(middle rune) ([]board, error) {
+	a, err := getAlphabetWithout([]rune{middle, 's'})
+	if err != nil {
+		return nil, err
+	}
+	outerCombs := combinations(a, 6)
+	res := make([]board, len(outerCombs))
+	for i, c := range outerCombs {
+		b, err := newBoard(middle, c)
+		if err != nil {
+			return nil, err
+		}
+		res[i] = b
+	}
+	return res, nil
+}
