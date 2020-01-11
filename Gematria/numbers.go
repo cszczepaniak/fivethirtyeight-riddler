@@ -1,5 +1,9 @@
 package main
 
+var groups = []string{
+	``, `thousand`, `million`, `billion`,
+}
+
 var onesMap = map[int]string{
 	0: ``,
 	1: `one`,
@@ -20,7 +24,7 @@ var tensMap = map[int]string{
 	5: `fifty`,
 	6: `sixty`,
 	7: `seventy`,
-	8: `eightty`,
+	8: `eighty`,
 	9: `ninety`,
 }
 
