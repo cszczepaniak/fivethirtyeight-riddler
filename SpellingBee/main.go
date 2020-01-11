@@ -1,114 +1,12 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 )
-
-type letterSet map[rune]struct{}
-
-func newLetterSet(s string) letterSet {
-	runes := []rune(s)
-	ls := make(map[rune]struct{})
-	for _, r := range runes {
-		if _, ok := ls[r]; !ok {
-			ls[r] = struct{}{}
-		}
-	}
-	return ls
-}
-
-type board struct {
-	middle  rune
-	letters letterSet
-}
-
-func newBoard(middle rune, others []rune) (board, error) {
-	if len(others) != 6 {
-		return board{}, errors.New(`a board must have six outer letters`)
-	}
-	letters := make(map[rune]struct{}, len(others)+1)
-	for _, r := range others {
-		if _, ok := letters[r]; !ok {
-			letters[r] = struct{}{}
-		} else {
-			return board{}, errors.New(`a board cannot contain duplicate letters`)
-		}
-	}
-	if _, ok := letters[middle]; ok {
-		return board{}, errors.New(`a board cannot contain duplicate letters`)
-	}
-	letters[middle] = struct{}{}
-	return board{
-		middle:  middle,
-		letters: letters,
-	}, nil
-}
-
-func (b board) String() string {
-	str := `[` + string(b.middle) + `: `
-	for c := range b.letters {
-		if c == b.middle {
-			continue
-		}
-		str += string(c)
-	}
-	return str + `]`
-}
-
-func (b *board) canMakeWord(w word) bool {
-	// the word must contain the middle letter
-	if _, ok := w.letters[b.middle]; !ok {
-		return false
-	}
-	for l := range w.letters {
-		if _, ok := b.letters[l]; !ok {
-			return false
-		}
-	}
-	return true
-}
-
-func (b *board) scoreWord(w word) int {
-	if !b.canMakeWord(w) {
-		return 0
-	}
-	runes := []rune(w.str)
-	if len(runes) == 4 {
-		return 1
-	}
-	score := len(runes)
-	isBonus := true
-	for l := range b.letters {
-		if _, ok := w.letters[l]; !ok {
-			isBonus = false
-			break
-		}
-	}
-	if isBonus {
-		score += 7
-	}
-	return score
-}
-
-type word struct {
-	str     string
-	letters letterSet
-}
-
-func newWord(w string) (word, error) {
-	if len([]rune(w)) < 4 {
-		return word{}, errors.New(`words must be at least 4 letters long`)
-	}
-	return word{
-		str:     w,
-		letters: newLetterSet(w),
-	}, nil
-}
 
 func main() {
 	if !fileExists(`words.txt`) {
@@ -130,40 +28,28 @@ func main() {
 	score := b.scoreWord(w)
 	fmt.Printf("score on board %s for word %s: %d\n", b, w.str, score)
 
-	// words, err := filterWords()
-	// if err != nil {
-	// 	panic(err)
-	// }
-}
-
-func buildLetterSet(word string) letterSet {
-	runes := []rune(word)
-	letterSet := make(map[rune]struct{})
-	for _, r := range runes {
-		if _, ok := letterSet[r]; !ok {
-			letterSet[r] = struct{}{}
-		}
+	words, err := getWordList()
+	if err != nil {
+		panic(err)
 	}
-	return letterSet
 }
 
-func filterWords() ([]string, error) {
-	words, err := readWordsFromFile(`words.txt`)
+func getWordList() ([]word, error) {
+	ws, err := readWordsFromFile(`words.txt`)
 	if err != nil {
 		return nil, err
 	}
 
-	res := make([]string, 0, len(words))
-	for _, w := range words {
+	res := make([]word, 0, len(ws))
+	for _, w := range ws {
 		if len([]rune(w)) < 4 || strings.Contains(w, `s`) {
 			continue
 		}
-		res = append(res, w)
-		if err != nil {
-			return nil, err
-		}
+		res = append(res, word{
+			str:     w,
+			letters: newLetterSet(w),
+		})
 	}
-
 	return res, nil
 }
 
