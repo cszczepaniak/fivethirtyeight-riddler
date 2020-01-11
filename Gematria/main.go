@@ -2,11 +2,27 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
 func main() {
-
+	bestNum, bestNumVal, max := 0, 0, 10000
+	bestStr := ``
+	for i := 1; i < max; i++ {
+		w, err := numberAsWord(i)
+		if err != nil {
+			panic(err)
+		}
+		val := wordValue(w)
+		if i < val {
+			bestNum = i
+			bestNumVal = val
+			bestStr = w
+		}
+	}
+	fmt.Printf("best number under %d: %d with an alphanumeric value of %d\n", max, bestNum, bestNumVal)
+	fmt.Printf("and a string of %q\n", bestStr)
 }
 
 func joinWords(strs ...string) string {
