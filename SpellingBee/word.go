@@ -36,7 +36,7 @@ func getWordList() ([]word, error) {
 		}
 		word, err := newWord(w)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		res = append(res, word)
 	}
