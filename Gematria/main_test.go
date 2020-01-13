@@ -81,6 +81,15 @@ func TestWordValue(t *testing.T) {
 		word string
 		exp  int
 	}{{
+		word: ` `,
+		exp:  0,
+	}, {
+		word: `z`,
+		exp:  26,
+	}, {
+		word: `a`,
+		exp:  1,
+	}, {
 		word: `riddler`,
 		exp:  70,
 	}, {
@@ -89,6 +98,12 @@ func TestWordValue(t *testing.T) {
 	}, {
 		word: `two`,
 		exp:  58,
+	}, {
+		word: `two hundred`,
+		exp:  132,
+	}, {
+		word: `two hundred twenty seven`,
+		exp:  304,
 	}}
 	for _, tc := range tests {
 		v := wordValue(tc.word)
