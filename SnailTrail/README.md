@@ -1,2 +1,1 @@
-# Snail Trail
-Problem statement [here](https://fivethirtyeight.com/features/how-long-is-the-snails-slimy-trail/).
+# [Snail Trail](https://fivethirtyeight.com/features/how-long-is-the-snails-slimy-trail/)
