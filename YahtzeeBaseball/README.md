@@ -1,0 +1,1 @@
+# [Yahtzee Baseball](https://fivethirtyeight.com/features/can-you-turn-americas-pastime-into-a-game-of-yahtzee/)
