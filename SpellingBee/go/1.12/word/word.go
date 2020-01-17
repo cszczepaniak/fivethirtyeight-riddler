@@ -1,4 +1,4 @@
-package main
+package word
 
 import (
 	"errors"
@@ -10,33 +10,33 @@ import (
 	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/letterset"
 )
 
-type word struct {
-	str     string
-	letters letterset.LetterSet
+type Word struct {
+	Str     string
+	Letters letterset.LetterSet
 }
 
-func newWord(w string) (word, error) {
+func New(w string) (Word, error) {
 	if len([]rune(w)) < 4 {
-		return word{}, errors.New(`words must be at least 4 letters long`)
+		return Word{}, errors.New(`words must be at least 4 letters long`)
 	}
-	return word{
-		str:     w,
-		letters: letterset.New(w),
+	return Word{
+		Str:     w,
+		Letters: letterset.New(w),
 	}, nil
 }
 
-func getWordList() ([]word, error) {
+func getWordList() ([]Word, error) {
 	ws, err := readWordsFromFile(`words.txt`)
 	if err != nil {
 		return nil, err
 	}
 
-	res := make([]word, 0, len(ws))
+	res := make([]Word, 0, len(ws))
 	for _, w := range ws {
 		if len([]rune(w)) < 4 || strings.Contains(w, `s`) || letterset.NumUniqueLetters(w) > 7 {
 			continue
 		}
-		word, err := newWord(w)
+		word, err := New(w)
 		if err != nil {
 			return nil, err
 		}

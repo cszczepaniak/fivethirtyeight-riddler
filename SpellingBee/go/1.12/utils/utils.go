@@ -1,11 +1,11 @@
-package main
+package utils
 
 import (
 	"errors"
 	"os"
 )
 
-func combinations(superset []rune, n int) [][]rune {
+func Combinations(superset []rune, n int) [][]rune {
 	if len(superset) == n {
 		return [][]rune{superset}
 	}
@@ -22,7 +22,7 @@ func combinations(superset []rune, n int) [][]rune {
 			break
 		}
 		others := superset[i+1:]
-		combs := combinations(others, n-1)
+		combs := Combinations(others, n-1)
 		for _, c := range combs {
 			set := append(c, r)
 			res = append(res, set)
@@ -31,7 +31,7 @@ func combinations(superset []rune, n int) [][]rune {
 	return res
 }
 
-func getAlphabetWithout(without []rune) ([]rune, error) {
+func GetAlphabetWithout(without []rune) ([]rune, error) {
 	runeMap := make(map[rune]struct{}, len(without))
 	for _, r := range without {
 		if r < 'a' || r > 'z' {
@@ -55,7 +55,7 @@ func getAlphabetWithout(without []rune) ([]rune, error) {
 	return res, nil
 }
 
-func fileExists(filename string) bool {
+func FileExists(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
 		return false

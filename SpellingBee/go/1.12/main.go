@@ -5,10 +5,12 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/board"
 )
 
 type result struct {
-	b     board
+	b     board.Board
 	score int
 }
 
