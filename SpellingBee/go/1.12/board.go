@@ -1,10 +1,14 @@
 package main
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/letterset"
+)
 
 type board struct {
 	middle  rune
-	letters letterSet
+	letters letterset.LetterSet
 }
 
 func newBoard(middle rune, others []rune) (board, error) {

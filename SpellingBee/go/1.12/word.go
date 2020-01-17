@@ -6,11 +6,13 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/letterset"
 )
 
 type word struct {
 	str     string
-	letters letterSet
+	letters letterset.LetterSet
 }
 
 func newWord(w string) (word, error) {
@@ -19,7 +21,7 @@ func newWord(w string) (word, error) {
 	}
 	return word{
 		str:     w,
-		letters: newLetterSet(w),
+		letters: letterset.New(w),
 	}, nil
 }
 
@@ -31,7 +33,7 @@ func getWordList() ([]word, error) {
 
 	res := make([]word, 0, len(ws))
 	for _, w := range ws {
-		if len([]rune(w)) < 4 || strings.Contains(w, `s`) || len(newLetterSet(w)) > 7 {
+		if len([]rune(w)) < 4 || strings.Contains(w, `s`) || letterset.NumUniqueLetters(w) > 7 {
 			continue
 		}
 		word, err := newWord(w)
