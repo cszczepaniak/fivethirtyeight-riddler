@@ -15,7 +15,8 @@ const (
 )
 
 var (
-	totalGames = flag.Int(`n`, 1000000, `number of games to simulate`)
+	nDucks     = flag.Int(`nDucks`, 2, `number of ducks in each game`)
+	totalGames = flag.Int(`nGames`, 1000000, `number of games to simulate`)
 )
 
 func main() {
@@ -59,9 +60,9 @@ func worker(nGames int, rc chan int, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for i := 0; i < nGames; i++ {
 		g := game.New(game.Config{
-			BoardWidth:  3,
-			BoardHeight: 3,
-			NumDucks:    2,
+			BoardWidth:  width,
+			BoardHeight: height,
+			NumDucks:    *nDucks,
 			StartX:      1,
 			StartY:      1,
 		})
