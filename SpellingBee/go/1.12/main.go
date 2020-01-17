@@ -40,24 +40,20 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Number of boards: %d\n", len(boards))
-	return
 
 	var bestBoard board.Board
 	bestScore := 0
 
-	alphabet, err := utils.GetAlphabetWithout([]rune{'s'})
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	resChan := make(chan result)
 	var wg sync.WaitGroup
-	gps := divideAlphabet(alphabet, runtime.NumCPU())
+	gps := divideBoards(boards, runtime.NumCPU())
 	for _, g := range gps {
 		go worker(resChan, g, words, &wg)
 		wg.Add(1)
 	}
+	totalBds := len(boards)
+	sizeOfOneTenth := totalBds / 10
+	doneSoFar := 0
 	go func() {
 		for {
 			r := <-resChan
@@ -65,12 +61,34 @@ func main() {
 				bestScore = r.score
 				bestBoard = r.b
 			}
+			doneSoFar++
+			if doneSoFar%sizeOfOneTenth == 0 {
+				fmt.Printf("%d of %d boards done!\n", doneSoFar, totalBds)
+			}
 		}
 	}()
 	wg.Wait()
 	fmt.Printf("best board: %s; with score %d\n", bestBoard, bestScore)
 	d := time.Since(start)
-	fmt.Printf("Elapsed time %s: \n", d)
+	fmt.Printf("Elapsed time: %s \n", d)
+}
+
+func divideBoards(bs []board.Board, n int) [][]board.Board {
+	gpSize := len(bs) / n
+	leftover := len(bs) % n
+	res := make([][]board.Board, n)
+	for i := 0; i < n; i++ {
+		num := 0
+		if leftover > 0 {
+			num = gpSize + 1
+			leftover--
+		} else {
+			num = gpSize
+		}
+		res[i] = bs[0:num]
+		bs = bs[num:]
+	}
+	return res
 }
 
 func divideAlphabet(a []rune, n int) [][]rune {
@@ -91,25 +109,18 @@ func divideAlphabet(a []rune, n int) [][]rune {
 	return res
 }
 
-func worker(resChan chan result, letters []rune, words []word.Word, wg *sync.WaitGroup) {
+func worker(resChan chan result, boards []board.Board, words []word.Word, wg *sync.WaitGroup) {
 	defer wg.Done()
-	for _, r := range letters {
-		fmt.Printf("NOW SERVING: %c\n", r)
-		boards, err := utils.AllBoardsWithCenter(r)
-		if err != nil {
-			log.Fatal(err)
+	for _, b := range boards {
+		score := 0
+		for _, w := range words {
+			if b.CanMakeWord(w) {
+				score += b.ScoreWord(w)
+			}
 		}
-		for _, b := range boards {
-			score := 0
-			for _, w := range words {
-				if b.CanMakeWord(w) {
-					score += b.ScoreWord(w)
-				}
-			}
-			resChan <- result{
-				b:     b,
-				score: score,
-			}
+		resChan <- result{
+			b:     b,
+			score: score,
 		}
 	}
 }
