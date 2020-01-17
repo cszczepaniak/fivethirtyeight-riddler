@@ -10,7 +10,7 @@ type Game struct {
 	Ducks []duck.Duck
 }
 
-type GameConfig struct {
+type Config struct {
 	BoardWidth  int
 	BoardHeight int
 	NumDucks    int
@@ -18,7 +18,7 @@ type GameConfig struct {
 	StartY      int
 }
 
-func New(c GameConfig) Game {
+func New(c Config) Game {
 	b := board.NewBoard(c.BoardWidth, c.BoardHeight)
 	ds := make([]duck.Duck, c.NumDucks)
 	for i := range ds {
