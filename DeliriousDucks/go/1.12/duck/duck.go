@@ -20,7 +20,8 @@ func New(x, y int, b board.Board) Duck {
 
 func (d *Duck) Move() {
 	pts := d.findNeighboringPoints()
-	p := pts[rand.Intn(len(pts))]
+	idx := rand.Intn(len(pts))
+	p := pts[idx]
 	d.Pos.X = p.X
 	d.Pos.Y = p.Y
 }

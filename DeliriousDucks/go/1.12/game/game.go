@@ -33,8 +33,9 @@ func New(c Config) Game {
 func (g *Game) Play() int {
 	iter := 0
 	for iter == 0 || !g.isOver() {
-		for _, d := range g.Ducks {
+		for i, d := range g.Ducks {
 			d.Move()
+			g.Ducks[i] = d
 		}
 		iter++
 	}
