@@ -2,7 +2,10 @@ package utils
 
 import (
 	"errors"
+	"io/ioutil"
+	"net/http"
 	"os"
+	"strings"
 )
 
 func Combinations(superset []rune, n int) [][]rune {
@@ -61,4 +64,45 @@ func FileExists(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
+}
+
+func DownloadWords() error {
+	resp, err := http.Get(`https://norvig.com/ngrams/enable1.txt`)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(`words.txt`)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.Write(bytes)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ReadWordsFromFile(file string) ([]string, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	bytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+
+	txt := string(bytes)
+	return strings.Split(txt, "\n"), nil
 }

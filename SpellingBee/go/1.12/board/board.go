@@ -46,7 +46,7 @@ func (b Board) String() string {
 	return str + `]`
 }
 
-func (b *Board) canMakeWord(w word.Word) bool {
+func (b *Board) CanMakeWord(w word.Word) bool {
 	// the word must contain the middle letter
 	if _, ok := w.Letters[b.Middle]; !ok {
 		return false
@@ -59,8 +59,8 @@ func (b *Board) canMakeWord(w word.Word) bool {
 	return true
 }
 
-func (b *Board) scoreWord(w word.Word) int {
-	if !b.canMakeWord(w) {
+func (b *Board) ScoreWord(w word.Word) int {
+	if !b.CanMakeWord(w) {
 		return 0
 	}
 	runes := []rune(w.Str)
@@ -81,7 +81,7 @@ func (b *Board) scoreWord(w word.Word) int {
 	return score
 }
 
-func allBoardsWithCenter(middle rune) ([]Board, error) {
+func AllBoardsWithCenter(middle rune) ([]Board, error) {
 	a, err := utils.GetAlphabetWithout([]rune{middle, 's'})
 	if err != nil {
 		return nil, err

@@ -2,9 +2,6 @@ package word
 
 import (
 	"errors"
-	"io/ioutil"
-	"net/http"
-	"os"
 	"strings"
 
 	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/letterset"
@@ -25,14 +22,10 @@ func New(w string) (Word, error) {
 	}, nil
 }
 
-func getWordList() ([]Word, error) {
-	ws, err := readWordsFromFile(`words.txt`)
-	if err != nil {
-		return nil, err
-	}
-
-	res := make([]Word, 0, len(ws))
-	for _, w := range ws {
+// FilterWords removes words which won't be used according to the rules and convers them into Word structs
+func FilterWords(words []string) ([]Word, error) {
+	res := make([]Word, 0, len(words))
+	for _, w := range words {
 		if len([]rune(w)) < 4 || strings.Contains(w, `s`) || letterset.NumUniqueLetters(w) > 7 {
 			continue
 		}
@@ -43,45 +36,4 @@ func getWordList() ([]Word, error) {
 		res = append(res, word)
 	}
 	return res, nil
-}
-
-func readWordsFromFile(file string) ([]string, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	bytes, err := ioutil.ReadAll(f)
-	if err != nil {
-		return nil, err
-	}
-
-	txt := string(bytes)
-	return strings.Split(txt, "\n"), nil
-}
-
-func downloadWords() error {
-	resp, err := http.Get(`https://norvig.com/ngrams/enable1.txt`)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	bytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	f, err := os.Create(`words.txt`)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	_, err = f.Write(bytes)
-	if err != nil {
-		return err
-	}
-	return nil
 }

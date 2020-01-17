@@ -2,11 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"runtime"
 	"sync"
 	"time"
 
 	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/board"
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/utils"
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/word"
 )
 
 type result struct {
@@ -16,24 +19,29 @@ type result struct {
 
 func main() {
 	start := time.Now()
-	if !fileExists(`words.txt`) {
-		err := downloadWords()
+	if !utils.FileExists(`words.txt`) {
+		err := utils.DownloadWords()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 
-	words, err := getWordList()
+	wordStrs, err := utils.ReadWordsFromFile(`words.txt`)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	var bestBoard board
+	words, err := word.FilterWords(wordStrs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var bestBoard board.Board
 	bestScore := 0
 
-	alphabet, err := getAlphabetWithout([]rune{'s'})
+	alphabet, err := utils.GetAlphabetWithout([]rune{'s'})
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	resChan := make(chan result)
@@ -76,19 +84,19 @@ func divideAlphabet(a []rune, n int) [][]rune {
 	return res
 }
 
-func worker(resChan chan result, letters []rune, words []word, wg *sync.WaitGroup) {
+func worker(resChan chan result, letters []rune, words []word.Word, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for _, r := range letters {
 		fmt.Printf("NOW SERVING: %c\n", r)
-		boards, err := allBoardsWithCenter(r)
+		boards, err := board.AllBoardsWithCenter(r)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		for _, b := range boards {
 			score := 0
 			for _, w := range words {
-				if b.canMakeWord(w) {
-					score += b.scoreWord(w)
+				if b.CanMakeWord(w) {
+					score += b.ScoreWord(w)
 				}
 			}
 			resChan <- result{
