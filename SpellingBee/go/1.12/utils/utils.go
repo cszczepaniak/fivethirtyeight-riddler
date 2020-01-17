@@ -179,7 +179,8 @@ func BoardSubsets(b board.Board) []letterset.LetterSet {
 	subsets := make([]letterset.LetterSet, 0)
 	for i := 1; i < 8; i++ {
 		cs := Combinations(outer, i)
-		for _, c := range cs {
+		for _, outerComb := range cs {
+			c := append(outerComb, b.Middle)
 			subsets = append(subsets, letterset.FromRunes(c))
 		}
 	}

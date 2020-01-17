@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/board"
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/letterset"
 	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/utils"
 	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/word"
 )
@@ -36,6 +37,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	pointsMap := utils.CalculatePointsMap(words)
+
 	boards, err := utils.GetPossibleBoards(words)
 	if err != nil {
 		log.Fatal(err)
@@ -48,7 +51,7 @@ func main() {
 	var wg sync.WaitGroup
 	gps := divideBoards(boards, runtime.NumCPU())
 	for _, g := range gps {
-		go worker(resChan, g, words, &wg)
+		go worker(resChan, g, words, pointsMap, &wg)
 		wg.Add(1)
 	}
 	totalBds := len(boards)
@@ -91,31 +94,14 @@ func divideBoards(bs []board.Board, n int) [][]board.Board {
 	return res
 }
 
-func divideAlphabet(a []rune, n int) [][]rune {
-	groupSize := len(a) / n
-	leftover := len(a) % n
-	res := make([][]rune, n)
-	for i := 0; i < n; i++ {
-		n := 0
-		if leftover > 0 {
-			n = groupSize + 1
-			leftover--
-		} else {
-			n = groupSize
-		}
-		res[i] = a[0:n]
-		a = a[n:]
-	}
-	return res
-}
-
-func worker(resChan chan result, boards []board.Board, words []word.Word, wg *sync.WaitGroup) {
+func worker(resChan chan result, boards []board.Board, words []word.Word, pointsMap map[letterset.LetterSet]int, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for _, b := range boards {
 		score := 0
-		for _, w := range words {
-			if b.CanMakeWord(w) {
-				score += b.ScoreWord(w)
+		subsets := utils.BoardSubsets(b)
+		for _, ls := range subsets {
+			if s, ok := pointsMap[ls]; ok {
+				score += s
 			}
 		}
 		resChan <- result{
