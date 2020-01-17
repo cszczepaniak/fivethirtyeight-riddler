@@ -11,7 +11,7 @@ type Duck struct {
 	Board board.Board
 }
 
-func NewDuck(x, y int, b board.Board) Duck {
+func New(x, y int, b board.Board) Duck {
 	return Duck{
 		Pos:   board.NewPoint(x, y),
 		Board: b,

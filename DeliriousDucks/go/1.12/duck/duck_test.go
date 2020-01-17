@@ -67,7 +67,7 @@ func TestFindNeighboringPoints(t *testing.T) {
 	}}
 
 	for _, tc := range tests {
-		d := NewDuck(tc.x, tc.y, tc.b)
+		d := New(tc.x, tc.y, tc.b)
 		pts := d.findNeighboringPoints()
 		assert.Len(t, pts, len(tc.exp))
 		for _, p := range tc.exp {
@@ -134,7 +134,7 @@ func TestMove(t *testing.T) {
 	}}
 
 	for _, tc := range tests {
-		d := NewDuck(tc.x, tc.y, tc.b)
+		d := New(tc.x, tc.y, tc.b)
 		d.Move()
 		assert.Contains(t, tc.possPts, d.Pos)
 	}
