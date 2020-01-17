@@ -155,3 +155,33 @@ func AllBoardsWithCenter(middle rune) ([]board.Board, error) {
 	}
 	return res, nil
 }
+
+func CalculatePointsMap(words []word.Word) map[letterset.LetterSet]int {
+	pointsMap := make(map[letterset.LetterSet]int)
+	for _, w := range words {
+		if _, ok := pointsMap[w.Letters]; !ok {
+			pointsMap[w.Letters] = w.Score()
+		} else {
+			pointsMap[w.Letters] += w.Score()
+		}
+	}
+	return pointsMap
+}
+
+func BoardSubsets(b board.Board) []letterset.LetterSet {
+	outer := make([]rune, 0, len(b.Letters)-1)
+	for _, r := range b.Letters {
+		if r == b.Middle {
+			continue
+		}
+		outer = append(outer, r)
+	}
+	subsets := make([]letterset.LetterSet, 0)
+	for i := 1; i < 8; i++ {
+		cs := Combinations(outer, i)
+		for _, c := range cs {
+			subsets = append(subsets, letterset.FromRunes(c))
+		}
+	}
+	return append(subsets, letterset.FromRunes([]rune{b.Middle}))
+}
