@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"runtime"
 	"sync"
@@ -9,27 +10,33 @@ import (
 )
 
 const (
-	width      = 3
-	height     = 3
-	totalGames = 10000000
+	width  = 3
+	height = 3
+)
+
+var (
+	totalGames = flag.Int(`n`, 1000000, `number of games to simulate`)
 )
 
 func main() {
-	var totalMinutes uint64 = 0
+	flag.Parse()
+
 	resChan := make(chan int)
 	var wg sync.WaitGroup
-	gps := splitEvenly(totalGames, runtime.NumCPU())
+	gps := splitEvenly(*totalGames, runtime.NumCPU())
 	for _, n := range gps {
 		wg.Add(1)
 		go worker(n, resChan, &wg)
 	}
+
+	var totalMinutes uint64 = 0
 	go func() {
 		for {
 			totalMinutes += uint64(<-resChan)
 		}
 	}()
 	wg.Wait()
-	fmt.Printf("ducks met after and average of %0.3f minutes\n", float64(totalMinutes)/float64(totalGames))
+	fmt.Printf("ducks met after an average of %0.3f minutes\n", float64(totalMinutes)/float64(*totalGames))
 }
 
 func splitEvenly(n, k int) []int {
