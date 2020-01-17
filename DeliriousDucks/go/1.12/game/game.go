@@ -1,6 +1,9 @@
 package game
 
 import (
+	"math/rand"
+	"time"
+
 	"github.com/cszczepaniak/fivethirtyeight-riddler/DeliriousDucks/board"
 	"github.com/cszczepaniak/fivethirtyeight-riddler/DeliriousDucks/duck"
 )
@@ -8,6 +11,8 @@ import (
 type Game struct {
 	Board board.Board
 	Ducks []duck.Duck
+
+	r *rand.Rand
 }
 
 type Config struct {
@@ -27,6 +32,7 @@ func New(c Config) Game {
 	return Game{
 		Board: b,
 		Ducks: ds,
+		r:     rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 }
 
@@ -34,7 +40,7 @@ func (g *Game) Play() int {
 	iter := 0
 	for iter == 0 || !g.isOver() {
 		for i, d := range g.Ducks {
-			d.Move()
+			d.Move(g.r)
 			g.Ducks[i] = d
 		}
 		iter++

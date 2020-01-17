@@ -1,7 +1,9 @@
 package duck
 
 import (
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -132,10 +134,10 @@ func TestMove(t *testing.T) {
 			board.NewPoint(0, 2),
 		},
 	}}
-
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for _, tc := range tests {
 		d := New(tc.x, tc.y, tc.b)
-		d.Move()
+		d.Move(r)
 		assert.NotEqual(t, board.Point{X: tc.x, Y: tc.y}, d.Pos)
 		assert.Contains(t, tc.possPts, d.Pos)
 	}
