@@ -16,27 +16,16 @@ func New(middle rune, others []rune) (Board, error) {
 	if len(others) != 6 {
 		return Board{}, errors.New(`a board must have six outer letters`)
 	}
-	letters := make(map[rune]struct{}, len(others)+1)
-	for _, r := range others {
-		if _, ok := letters[r]; !ok {
-			letters[r] = struct{}{}
-		} else {
-			return Board{}, errors.New(`a board cannot contain duplicate letters`)
-		}
-	}
-	if _, ok := letters[middle]; ok {
-		return Board{}, errors.New(`a board cannot contain duplicate letters`)
-	}
-	letters[middle] = struct{}{}
+	all := append(others, middle)
 	return Board{
 		Middle:  middle,
-		Letters: letters,
+		Letters: letterset.FromRunes(all),
 	}, nil
 }
 
 func (b Board) String() string {
 	str := `[` + string(b.Middle) + `: `
-	for c := range b.Letters {
+	for _, c := range b.Letters {
 		if c == b.Middle {
 			continue
 		}
@@ -47,11 +36,11 @@ func (b Board) String() string {
 
 func (b *Board) CanMakeWord(w word.Word) bool {
 	// the word must contain the middle letter
-	if _, ok := w.Letters[b.Middle]; !ok {
+	if !w.Letters.Contains(b.Middle) {
 		return false
 	}
-	for l := range w.Letters {
-		if _, ok := b.Letters[l]; !ok {
+	for _, l := range w.Letters {
+		if !b.Letters.Contains(l) {
 			return false
 		}
 	}
@@ -68,8 +57,8 @@ func (b *Board) ScoreWord(w word.Word) int {
 	}
 	score := len(runes)
 	isBonus := true
-	for l := range b.Letters {
-		if _, ok := w.Letters[l]; !ok {
+	for _, l := range b.Letters {
+		if !w.Letters.Contains(l) {
 			isBonus = false
 			break
 		}

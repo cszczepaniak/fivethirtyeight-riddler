@@ -44,7 +44,7 @@ func (w Word) Score() int {
 func FilterWords(words []string) ([]Word, error) {
 	res := make([]Word, 0, len(words))
 	for _, w := range words {
-		if len([]rune(w)) < 4 || strings.Contains(w, `s`) || letterset.NumUniqueLetters(w) > 7 {
+		if len([]rune(w)) < 4 || strings.Contains(w, `s`) || letterset.Length(w) > 7 {
 			continue
 		}
 		word, err := New(w)

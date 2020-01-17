@@ -19,6 +19,19 @@ func New(s string) LetterSet {
 	return LetterSet(rs)
 }
 
+func (ls LetterSet) Contains(r rune) bool {
+	for _, lsr := range ls {
+		if lsr == r {
+			return true
+		}
+	}
+	return false
+}
+
+func FromRunes(r []rune) LetterSet {
+	return New(string(r))
+}
+
 func Length(s string) int {
 	return len(New(s))
 }

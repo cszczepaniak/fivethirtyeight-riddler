@@ -116,7 +116,7 @@ func BoardsFromLetterset(ls letterset.LetterSet) ([]board.Board, error) {
 		return nil, errors.New(`letterset must represent a pangram`)
 	}
 	res := make([]board.Board, 0, 7)
-	for r := range ls {
+	for _, r := range ls {
 		res = append(res, board.Board{
 			Middle:  r,
 			Letters: ls,
