@@ -26,6 +26,20 @@ func (w Word) IsPangram() bool {
 	return len(w.Letters) == 7
 }
 
+func (w Word) Score() int {
+	if len(w.Str) < 4 {
+		return 0
+	}
+	if len(w.Str) == 4 {
+		return 1
+	}
+	bonus := 0
+	if w.IsPangram() {
+		bonus = 7
+	}
+	return len(w.Str) + bonus
+}
+
 // FilterWords removes words which won't be used according to the rules and convers them into Word structs
 func FilterWords(words []string) ([]Word, error) {
 	res := make([]Word, 0, len(words))
