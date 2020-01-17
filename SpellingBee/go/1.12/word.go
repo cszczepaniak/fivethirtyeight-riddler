@@ -31,7 +31,7 @@ func getWordList() ([]word, error) {
 
 	res := make([]word, 0, len(ws))
 	for _, w := range ws {
-		if len([]rune(w)) < 4 || strings.Contains(w, `s`) {
+		if len([]rune(w)) < 4 || strings.Contains(w, `s`) || len(newLetterSet(w)) > 7 {
 			continue
 		}
 		word, err := newWord(w)
