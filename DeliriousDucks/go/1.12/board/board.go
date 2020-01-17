@@ -1,10 +1,5 @@
 package board
 
-const (
-	Width  = 3
-	Height = 3
-)
-
 type Point struct {
 	X, Y int
 }
