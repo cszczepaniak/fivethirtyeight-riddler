@@ -136,6 +136,7 @@ func TestMove(t *testing.T) {
 	for _, tc := range tests {
 		d := New(tc.x, tc.y, tc.b)
 		d.Move()
+		assert.NotEqual(t, board.Point{X: tc.x, Y: tc.y}, d.Pos)
 		assert.Contains(t, tc.possPts, d.Pos)
 	}
 }
