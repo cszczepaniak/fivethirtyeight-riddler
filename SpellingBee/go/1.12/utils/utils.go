@@ -6,6 +6,10 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/board"
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/letterset"
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/word"
 )
 
 func Combinations(superset []rune, n int) [][]rune {
@@ -105,4 +109,49 @@ func ReadWordsFromFile(file string) ([]string, error) {
 
 	txt := string(bytes)
 	return strings.Split(txt, "\n"), nil
+}
+
+func BoardsFromLetterset(ls letterset.LetterSet) ([]board.Board, error) {
+	if len(ls) != 7 {
+		return nil, errors.New(`letterset must represent a pangram`)
+	}
+	res := make([]board.Board, 0, 7)
+	for r := range ls {
+		res = append(res, board.Board{
+			Middle:  r,
+			Letters: ls,
+		})
+	}
+	return res, nil
+}
+
+func GetPossibleBoards(words []word.Word) ([]board.Board, error) {
+	bds := make([]board.Board, 0)
+	for _, w := range words {
+		if w.IsPangram() {
+			b, err := BoardsFromLetterset(w.Letters)
+			if err != nil {
+				return nil, err
+			}
+			bds = append(bds, b...)
+		}
+	}
+	return bds, nil
+}
+
+func AllBoardsWithCenter(middle rune) ([]board.Board, error) {
+	a, err := GetAlphabetWithout([]rune{middle, 's'})
+	if err != nil {
+		return nil, err
+	}
+	outerCombs := Combinations(a, 6)
+	res := make([]board.Board, len(outerCombs))
+	for i, c := range outerCombs {
+		b, err := board.New(middle, c)
+		if err != nil {
+			return nil, err
+		}
+		res[i] = b
+	}
+	return res, nil
 }

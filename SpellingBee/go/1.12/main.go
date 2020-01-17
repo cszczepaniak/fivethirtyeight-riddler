@@ -36,6 +36,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	boards, err := utils.GetPossibleBoards(words)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Number of boards: %d\n", len(boards))
+	return
+
 	var bestBoard board.Board
 	bestScore := 0
 
@@ -88,7 +95,7 @@ func worker(resChan chan result, letters []rune, words []word.Word, wg *sync.Wai
 	defer wg.Done()
 	for _, r := range letters {
 		fmt.Printf("NOW SERVING: %c\n", r)
-		boards, err := board.AllBoardsWithCenter(r)
+		boards, err := utils.AllBoardsWithCenter(r)
 		if err != nil {
 			log.Fatal(err)
 		}

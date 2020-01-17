@@ -22,6 +22,10 @@ func New(w string) (Word, error) {
 	}, nil
 }
 
+func (w Word) IsPangram() bool {
+	return len(w.Letters) == 7
+}
+
 // FilterWords removes words which won't be used according to the rules and convers them into Word structs
 func FilterWords(words []string) ([]Word, error) {
 	res := make([]Word, 0, len(words))

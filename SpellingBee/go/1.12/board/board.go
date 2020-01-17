@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/letterset"
-	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/utils"
 	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/word"
 )
 
@@ -79,21 +78,4 @@ func (b *Board) ScoreWord(w word.Word) int {
 		score += 7
 	}
 	return score
-}
-
-func AllBoardsWithCenter(middle rune) ([]Board, error) {
-	a, err := utils.GetAlphabetWithout([]rune{middle, 's'})
-	if err != nil {
-		return nil, err
-	}
-	outerCombs := utils.Combinations(a, 6)
-	res := make([]Board, len(outerCombs))
-	for i, c := range outerCombs {
-		b, err := New(middle, c)
-		if err != nil {
-			return nil, err
-		}
-		res[i] = b
-	}
-	return res, nil
 }
