@@ -2,45 +2,61 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/board"
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/letterset"
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/utils"
+	"github.com/cszczepaniak/fivethirtyeight-riddler/SpellingBee/word"
 )
 
 type result struct {
-	b     board
+	b     board.Board
 	score int
 }
 
 func main() {
 	start := time.Now()
-	if !fileExists(`words.txt`) {
-		err := downloadWords()
+	if !utils.FileExists(`words.txt`) {
+		err := utils.DownloadWords()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 
-	words, err := getWordList()
+	wordStrs, err := utils.ReadWordsFromFile(`words.txt`)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	var bestBoard board
+	words, err := word.FilterWords(wordStrs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pointsMap := utils.CalculatePointsMap(words)
+
+	boards, err := utils.GetPossibleBoards(words)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var bestBoard board.Board
 	bestScore := 0
-
-	alphabet, err := getAlphabetWithout([]rune{'s'})
-	if err != nil {
-		panic(err)
-	}
 
 	resChan := make(chan result)
 	var wg sync.WaitGroup
-	gps := divideAlphabet(alphabet, runtime.NumCPU())
+	gps := divideBoards(boards, runtime.NumCPU())
 	for _, g := range gps {
-		go worker(resChan, g, words, &wg)
+		go worker(resChan, g, words, pointsMap, &wg)
 		wg.Add(1)
 	}
+	totalBds := len(boards)
+	sizeOfOneTenth := totalBds / 10
+	doneSoFar := 0
 	go func() {
 		for {
 			r := <-resChan
@@ -48,51 +64,49 @@ func main() {
 				bestScore = r.score
 				bestBoard = r.b
 			}
+			doneSoFar++
+			if doneSoFar%sizeOfOneTenth == 0 {
+				fmt.Printf("%d of %d boards done!\n", doneSoFar, totalBds)
+			}
 		}
 	}()
 	wg.Wait()
 	fmt.Printf("best board: %s; with score %d\n", bestBoard, bestScore)
 	d := time.Since(start)
-	fmt.Printf("Elapsed time %s: \n", d)
+	fmt.Printf("Elapsed time: %s \n", d)
 }
 
-func divideAlphabet(a []rune, n int) [][]rune {
-	groupSize := len(a) / n
-	leftover := len(a) % n
-	res := make([][]rune, n)
+func divideBoards(bs []board.Board, n int) [][]board.Board {
+	gpSize := len(bs) / n
+	leftover := len(bs) % n
+	res := make([][]board.Board, n)
 	for i := 0; i < n; i++ {
-		n := 0
+		num := 0
 		if leftover > 0 {
-			n = groupSize + 1
+			num = gpSize + 1
 			leftover--
 		} else {
-			n = groupSize
+			num = gpSize
 		}
-		res[i] = a[0:n]
-		a = a[n:]
+		res[i] = bs[0:num]
+		bs = bs[num:]
 	}
 	return res
 }
 
-func worker(resChan chan result, letters []rune, words []word, wg *sync.WaitGroup) {
+func worker(resChan chan result, boards []board.Board, words []word.Word, pointsMap map[letterset.LetterSet]int, wg *sync.WaitGroup) {
 	defer wg.Done()
-	for _, r := range letters {
-		fmt.Printf("NOW SERVING: %c\n", r)
-		boards, err := allBoardsWithCenter(r)
-		if err != nil {
-			panic(err)
+	for _, b := range boards {
+		score := 0
+		subsets := utils.BoardSubsets(b)
+		for _, ls := range subsets {
+			if s, ok := pointsMap[ls]; ok {
+				score += s
+			}
 		}
-		for _, b := range boards {
-			score := 0
-			for _, w := range words {
-				if b.canMakeWord(w) {
-					score += b.scoreWord(w)
-				}
-			}
-			resChan <- result{
-				b:     b,
-				score: score,
-			}
+		resChan <- result{
+			b:     b,
+			score: score,
 		}
 	}
 }
