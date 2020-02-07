@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -10,9 +11,11 @@ func main() {
 	for t.Year() < 2100 {
 		if isPalindrome(t.Format(`01022006`)) {
 			n++
+			fmt.Printf("Date %s is a palindrome: %s\n", t.Format(`Jan 2 2006`), t.Format(`01022006`))
 		}
-		t.AddDate(0, 0, 1)
+		t = t.AddDate(0, 0, 1)
 	}
+	fmt.Printf("There are %d palindrome dates left this century (after Feb 02 2020)\n", n)
 }
 
 func isPalindrome(s string) bool {
