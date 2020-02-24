@@ -6,7 +6,7 @@ import (
 )
 
 /*
-Note: this is quite a naive solution...
+Note: you clearly don't need to write a program to solve this, but I did anyway...
 */
 
 const (
