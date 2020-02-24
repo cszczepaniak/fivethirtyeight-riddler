@@ -1,0 +1,1 @@
+# [Tempertaures (Riddler Express)](https://fivethirtyeight.com/features/can-you-flip-your-way-to-victory/)
